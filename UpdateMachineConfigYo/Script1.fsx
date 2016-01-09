@@ -1,6 +1,9 @@
 ﻿// Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
 
+#r "System.Xml.dll"
+#r "System.Xml.Linq.dll"
+
 open System.Xml
 open System.Xml.Linq
 
@@ -40,12 +43,10 @@ let createMaxConnElement address count =
 [<EntryPoint>]
 let main argv = 
     let fileName = if argv.Length > 0 then argv.[0] else ""
-    let sitename = if argv.Length > 1 then argv.[1] else ""
-    match fileName, sitename with
-    | "",_ -> ()
-    | _,"" -> ()
-    | f, s -> 
-        let doc = loadDoc f
+    match fileName with
+    | "" -> ()
+    | _ -> 
+        let doc = loadDoc fileName
         let connMgmt =
             doc
             |> getElementFromDoc "configuration"
@@ -53,7 +54,7 @@ let main argv =
             |> getOrAddElement "connectionManagement"
 
         connMgmt.Add(createMaxConnElement "*" "2")
-        connMgmt.Add(createMaxConnElement s "144")
+        connMgmt.Add(createMaxConnElement "http://test.com" "144")
 
         printfn "%A" doc
         doc.Save(fileName)
