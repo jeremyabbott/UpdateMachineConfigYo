@@ -4,6 +4,8 @@
 open System.Xml
 open System.Xml.Linq
 
+let xname name = XName.Get name
+
 let loadDoc (name : string) = XDocument.Load(name)
 
 let getElementFromDoc (name :string) (d : XDocument) =
@@ -37,14 +39,24 @@ let createMaxConnElement address count =
     createElement "add" [| ("address", address)
                            ("maxconnection", count)|]
 
+let createOrSetMaxConnElement address count (parent : XContainer) =
+    let e = parent.Elements(XName.Get("add")) |> Seq.tryFind (fun x -> x.Attribute(xname "address").Value = address)
+    match e with
+    | Some el ->
+        addAttribute ("address", address) el |> ignore
+        addAttribute ("maxconnection", count) el |> ignore
+    | None -> createMaxConnElement address count |> parent.Add
+
 [<EntryPoint>]
 let main argv = 
     let fileName = if argv.Length > 0 then argv.[0] else ""
     let sitename = if argv.Length > 1 then argv.[1] else ""
-    match fileName, sitename with
-    | "",_ -> ()
-    | _,"" -> ()
-    | f, s -> 
+    let count = if argv.Length > 2 then argv.[2] else ""
+    match fileName, sitename, count with
+    | "",_,_ -> ()
+    | _,"",_ -> ()
+    | _,_,"" -> ()
+    | f, s, c -> 
         let doc = loadDoc f
         let connMgmt =
             doc
@@ -52,9 +64,9 @@ let main argv =
             |> getOrAddElement "system.net"
             |> getOrAddElement "connectionManagement"
 
-        connMgmt.Add(createMaxConnElement "*" "2")
-        connMgmt.Add(createMaxConnElement s "144")
-
-        printfn "%A" doc
+        createOrSetMaxConnElement "*" "2" connMgmt
+        createOrSetMaxConnElement s c connMgmt
+        
+        //printfn "%A" doc
         doc.Save(fileName)
     0 // return an integer exit code

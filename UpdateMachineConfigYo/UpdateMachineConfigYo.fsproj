@@ -54,7 +54,7 @@
     <Compile Include="Program.fs" />
     <None Include="App.config" />
     <None Include="update.bat">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <PropertyGroup>
